@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f5dd9578-e8ed-40b2-ad63-2bfb598460d2" >
+		<http:listener-connection host="${secure::http.host}" port="${secure::http.port}" >
+			<reconnection >
+				<reconnect count="3" />
+			</reconnection>
+		</http:listener-connection>
+	</http:listener-config>
+	<twilio:config name="Twilio_Connector_Config" doc:name="Twilio Connector Config" doc:id="44315116-55e3-4639-bc87-8e5018d0fecd" >
+		<twilio:account-sid-auth-token-connection username="${secure::twilio.userName}" password="${secure::twilio.password}"/>
+	</twilio:config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="9b519168-e20d-410b-bf77-c64a60ea605a" />
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="a4780f8f-5bdf-4840-84c0-7c7c9f6fafc2" >
+		<email:smtp-connection host="smtp.gmail.com" port="${secure::emailSMTP.port}" user="${secure::emailSMTP.userName}" password="${secure::emailSMTP.password}">
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="51d7b480-aa53-4785-bcb8-82fbb87fa065" file="config-${env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="c6eb4433-6266-466b-99eb-cc560c190f92" name="env" value="dev" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="3563f2d5-c6ea-46af-b342-dad6279e2ad5" basePath="/api" >
+		<http:request-connection host="${secure::request.host}" >
+			<reconnection >
+				<reconnect />
+			</reconnection>
+		</http:request-connection>
+	</http:request-config>
+	<db:config name="${secure::db.config}" doc:name="Database Config" doc:id="8914bfa6-9b58-44a8-8e59-1e5931be5a57" >
+		<db:my-sql-connection host="${secure::db.host}" port="${secure::db.port}" user="${secure::db.username}" password="${secure::db.password}" database="mydb" >
+			<db:connection-properties >
+				<db:connection-property key="useSSL" value="false" />
+			</db:connection-properties>
+		</db:my-sql-connection>
+	</db:config>
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="b93ede97-b93e-4ba0-bdf9-18d43c6a7d91" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="cb45a4d8-3b14-4c28-8a76-031ec07a7a43" file="config-${env}.yaml" key="${secure.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+</mule>

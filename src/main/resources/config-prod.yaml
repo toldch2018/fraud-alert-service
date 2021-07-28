@@ -1,0 +1,29 @@
+http:
+   host: "![lVBcgbdpZGOhfHk3OiL1UA==]"
+   port: "![IWJWOxwrgbI=]"
+
+request:
+  host: "![xz4/6bZPXgeh1Q/0K/ogew==]"
+
+numverify:
+   access_key: "![YgVdY5HsQ+RNZ/QQRTfvc9Q/WYn9vZcIFVUjf3jOETD+0qWgIb6Rtw==]"
+
+db:
+  config: "![fV8qDBE6p5deiHnNSzxaDA==]"
+  host: "![lVBcgbdpZGOhfHk3OiL1UA==]"
+  port: "![QVSMXeDz2ng=]"
+  username: "![kLZhY3urSiA=]"
+  password: "![peA0TqJVm3Y=]"
+
+
+
+twilio:
+   From: "![kQv55zsVFFe/ezjEhrobCg==]"
+   To: "![i3N1P1UqFvBPl9rQ3i4l3g==]"
+   userName: "![FZAxFyV2WwF5/B0l9kmBGxFN09YOPcsNTOjZoI6Nej30Dsa9jEm6ng==]"
+   password: "![LrLW3YKW0XwnPZIHapMnklSWPuohuRQHaZnxAI6OzOV7kYyECmIUtg==]"
+
+emailSMTP:
+   userName: "![uC0qf/jjZVhIRh7F9i8Y+iQV2Nw7fLjK]"
+   password: "![65SbsUTTI03VMyw/QuBVWg==]"
+   port: "![VW0QG3jGSok=]"

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <apikit:config name="fraud-alert-api-2-config" api="fraud-alert-api-1.0.6-raml/fraud-alert-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="fraud-alert-api-2-main">
+        <http:listener path="/api/*" config-ref="HTTP_Listener_config" doc:name="listening-phone-number">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <set-variable value="#[attributes.headers.transactionId default uuid()]" doc:name="transactionId" doc:id="8252bd4a-d18e-4458-bee6-51dd50bbd84d" variableName="transactionId"/>
+		<apikit:router config-ref="fraud-alert-api-2-config" doc:id="9aed12a6-3122-49e7-be28-8625174b6dca"/>
+		<error-handler ref="Error_Handler" />
+    </flow> 
+    <flow name="get:\customers:fraud-alert-api-2-config">
+        <flow-ref doc:name="list-of-customer-data" doc:id="fa662207-c5f3-452e-ad2c-ab5907d5e395" name="customers-data-retrieve-from-new-dbFlow" />
+    </flow>
+    <flow name="get:\validate:fraud-alert-api-2-config">
+		<flow-ref doc:name="validation" doc:id="14a1b41e-21d5-4ec2-930b-905f5390f01f" name="phone-number-from-queryParamFlow" />
+    </flow>
+    <flow name="get:\customers\(customer-id):fraud-alert-api-2-config">
+		<flow-ref doc:name="data-retrieve-by-specific-id" doc:id="78dc7895-52a8-43d3-82fb-3593bdb848d1" name="customer-data-retrieve-from-new-db-by-specific-idFlow"/>
+    </flow>
+</mule>

@@ -1,0 +1,111 @@
+#%RAML 1.0 ResourceType
+get?:
+  description: get a <<resourcePathName | !singularize>> whith a specific <<resourcePathName | !singularize>> ID
+  displayName: <<resourcePathName | !singularize>>>>
+
+  responses:
+    200:
+      description: OK
+      headers:
+        Cache-Control: 
+        expires:
+          type: datetime
+      body:
+        application/json:
+          type: <<resourcePathName | !singularize | !uppercamelcase>>
+
+    400:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Bad Request"
+            }
+    401:
+        body:
+          application/json:
+            example:
+              {
+                errorMessage: "Un Authorized"
+              }
+
+    404:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Not Found"
+            }
+
+    500:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "service not available"
+            }
+
+delete?:
+  description: Delete a specific <<resourcePathName | !singularize>>
+  displayName: Delete a/an <<resourcePathName | !singularize>> by <<resourcePathName | !singularize>>ID
+  responses: 
+    200:
+      body:
+       application/json:
+    400:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Bad Request"
+            }
+
+    404:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Not Found"
+            }
+
+    500:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "service not available"
+            }
+put?:
+  body:
+    application/json:
+      type: <<resourcePathName | !singularize | !uppercamelcase>>
+  responses: 
+    200:
+      body:
+        application/json:
+    201:
+      body:
+        application/json:
+          type: !include ../dataTypes/response-dataType.raml
+    400:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Bad Request"
+            }
+    404:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Not Found"
+            }
+
+    500:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "service not available"
+            }

@@ -1,0 +1,67 @@
+#%RAML 1.0 ResourceType
+get?:
+  description: get list of <<resourcePathName>>
+  displayName: <<resourcePathName>>
+  queryParameters:
+    number:
+      description: phone number
+      type: integer
+      required: false
+      example: 15715666433
+  responses:
+    200:
+      body:
+        application/json:
+          type: <<resourcePathName | !uppercamelcase>>
+
+    404:
+      description: NOT FOUND
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Not Found"
+            }
+
+
+post?:
+  description: Add a new <<resourcePathName | !singularize>>
+  body:
+    application/json:
+      type: <<resourcePathName>> | nil
+  responses:
+    201:
+      body:
+         application/json:
+            type: !include ../dataTypes/response-dataType.raml
+      
+    400:
+      body:
+        application/json:
+            example:
+              {
+                errorMessage: "Bad Request"
+              }
+    401:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "Un Authorized"
+            }
+
+    404:
+      body:
+        application/json:
+            example:
+              {
+                errorMessage: "Not Found"
+              }
+
+    500:
+      body:
+        application/json:
+          example:
+            {
+              errorMessage: "service not available"
+            }

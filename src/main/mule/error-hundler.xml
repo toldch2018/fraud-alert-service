@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="Error_Handler" doc:id="37cf0ccf-d5b6-4416-a74c-1b69d1f021e8" >
+	            <on-error-propagate type="APIKIT:BAD_REQUEST">
+			<ee:transform doc:name="400-bad-request" doc:id="6aeea3ca-70f2-49cf-a85e-28123c6c3b01" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var httpStatus = 400
+var errorMessage = "Bad Request"
+var errorDescription = (((error.description default "" replace "Error validating JSON. Error: -" with "") replace "-" with "") replace "\"" with "") splitBy "\n" default "The Server do not understand  the request due to invalid syntax."
+---
+{
+	code: httpStatus,
+	message: if(errorMessage != null) errorMessage else (error.errorType.identifier),
+	description: if(errorDescription != null) errorDescription[0] else error.description[0],
+	dateTime: now() as String {format: "yyyy-MMM-dd hh:mm:ss a"},
+	transactionID: vars.transactionId
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+			<ee:transform doc:name="404-not-found" doc:id="0ecba96c-064d-4aff-ad24-d1d2eddbaf4c" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var httpStatus = 404
+var errorMessage = "Not Found"
+var errorDescription = (((error.description default "" replace "Error validating JSON. Error: -" with "") replace "-" with "") replace "\"" with "") splitBy "\n" default "The Server do not understand  the request due to invalid syntax."
+---
+{
+	code: httpStatus,
+	message: if(errorMessage != null) errorMessage else (error.errorType.identifier),
+	description: if(errorDescription != null) errorDescription[0] else error.description[0],
+	dateTime: now() as String {format: "yyyy-MMM-dd hh:mm:ss a"},
+	transactionID: vars.transactionId
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+			<ee:transform doc:name="405-method-not-allowed" doc:id="27cc0306-57ff-41ed-9063-29f7eaddc2a1" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var httpStatus = 405
+var errorMessage = "Method Not Allowed"
+var errorDescription = (((error.description default "" replace "Error validating JSON. Error: -" with "") replace "-" with "") replace "\"" with "") splitBy "\n" default "The Server do not understand  the request due to invalid syntax."
+---
+{
+	code: httpStatus,
+	message: if(errorMessage != null) errorMessage else (error.errorType.identifier),
+	description: if(errorDescription != null) errorDescription[0] else error.description[0],
+	dateTime: now() as String {format: "yyyy-MMM-dd hh:mm:ss a"},
+	transactionID: vars.transactionId
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+			<ee:transform doc:name="406-not-acceptable" doc:id="38d3b028-501c-4f47-9014-73bcd0473df5" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var httpStatus = 406
+var errorMessage = "Not Acceptable"
+var errorDescription = (((error.description default "" replace "Error validating JSON. Error: -" with "") replace "-" with "") replace "\"" with "") splitBy "\n" default "The Server do not understand  the request due to invalid syntax."
+---
+{
+	code: httpStatus,
+	message: if(errorMessage != null) errorMessage else (error.errorType.identifier),
+	description: if(errorDescription != null) errorDescription[0] else error.description[0],
+	dateTime: now() as String {format: "yyyy-MMM-dd hh:mm:ss a"},
+	transactionID: vars.transactionId
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+			<ee:transform doc:name="415-unsupported-media-type" doc:id="b157aa89-7612-4be9-a5fd-6de686364e9e" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var httpStatus = 415
+var errorMessage = "Unsupported Media Type"
+var errorDescription = (((error.description default "" replace "Error validating JSON. Error: -" with "") replace "-" with "") replace "\"" with "") splitBy "\n" default "The Server do not understand  the request due to invalid syntax."
+---
+{
+	code: httpStatus,
+	message: if(errorMessage != null) errorMessage else (error.errorType.identifier),
+	description: if(errorDescription != null) errorDescription[0] else error.description[0],
+	dateTime: now() as String {format: "yyyy-MMM-dd hh:mm:ss a"},
+	transactionID: vars.transactionId
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+			<ee:transform doc:name="501-not-implimented" doc:id="a5b4c210-d856-443d-ba85-ee0b6be31fba" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var httpStatus = 501
+var errorMessage = "Not Implemented"
+var errorDescription = (((error.description default "" replace "Error validating JSON. Error: -" with "") replace "-" with "") replace "\"" with "") splitBy "\n" default "The Server do not understand  the request due to invalid syntax."
+---
+{
+	code: httpStatus,
+	message: if(errorMessage != null) errorMessage else (error.errorType.identifier),
+	description: if(errorDescription != null) errorDescription[0] else error.description[0],
+	dateTime: now() as String {format: "yyyy-MMM-dd hh:mm:ss a"},
+	transactionID: vars.transactionId
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+            
+</on-error-propagate>
+	</error-handler>
+</mule>

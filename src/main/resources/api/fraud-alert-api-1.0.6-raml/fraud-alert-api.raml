@@ -1,0 +1,25 @@
+#%RAML 1.0
+title: Fraud-Alert-api
+version: v1
+baseUri:
+protocols: [http, https]
+mediaType: [application/json]
+# securedBy: [basic-auth]
+# securitySchemes:
+#   basic-auth: !include securityScheme.raml
+uses:
+  lib: library.raml
+/validate:
+  type: lib.collection
+    
+  get:
+    # is: [lib.client-id-required]
+
+/customers:
+  type: lib.collection
+  get:
+    # is: [lib.client-id-required]
+  /{customer-id}:
+    type: lib.member
+    get:
+      # is: [lib.client-id-required]

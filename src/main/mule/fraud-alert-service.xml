@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="phone-number-from-queryParamFlow" doc:id="03ad13e4-ecc2-4baf-8f72-5388b7dcbed6" >
+		<set-variable value="#[attributes.queryParams.number]" doc:name="queryParam-var" doc:id="2847c6fd-24d8-429c-8d6f-75d5f4037c71" variableName="myQuery"/>
+		<validation:is-number doc:name="phone-number" doc:id="a1877965-8bea-44d8-810a-786a2f301ef8" config-ref="Validation_Config" value="#[attributes.queryParams.number]" numberType="LONG" message='#[attributes.queryParams.number ++ " is not a valid input"]' />
+		<try doc:name="Try" doc:id="4ec5d9fa-1005-4c6b-917f-4a460128c6a7" >
+			<http:request method="POST" doc:name="input-from-queryParam" doc:id="82a7940c-03e0-489d-9fe1-eb6b55614985" config-ref="HTTP_Request_configuration" path="/validate">
+				<http:query-params><![CDATA[#[output application/java
+---
+{
+	number : attributes.queryParams.number,
+	access_key : "${secure::numverify.access_key}",
+	format : "1"
+}]]]></http:query-params>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1293281b-eb92-4ad4-b4fe-f1d1ca164c5c" type="ANY">
+					<logger level="INFO" doc:name="Logger" doc:id="1e69b00e-f4bb-45ba-942c-c940dff1c6af" message="request failed"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="response-in-json" doc:id="cf86e2ed-3856-427b-aaa6-38bf6bc0f088" >
+			<ee:message >
+				<ee:set-payload resource="response-data-in-json.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="response-data" doc:id="aaccf67c-ba9b-4120-9cd6-a5228049aa8b" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="4ec4bfbf-3f4e-4a32-82df-feafb491e6d8" >
+			<when expression="#[payload.valid == true]">
+				<async doc:name="Async" doc:id="9c27fd0e-e408-4222-a28f-b891d4bc28c2">
+					<db:insert doc:name="insert-into-new-db" doc:id="ab6ac86b-a531-4774-b55f-a6d41d2bd66f" config-ref="${secure::db.config}">
+						<db:sql><![CDATA[insert into modern_craft_customers(fullName, email, phoneNumber, muleTimeStamp)
+value(:fullName, :email, :phoneNumber, :muleTimeStamp)]]></db:sql>
+				<db:input-parameters><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	fullName: vars.myPayload.fullName default " ",
+	email: vars.myPayload.email default " ",
+	phoneNumber: vars.myQuery as String,
+	muleTimeStamp: now() as String {format: "yyyy-MMM-dd  hh:mm:ss a"}
+}]]]></db:input-parameters>
+					</db:insert>
+				</async>
+				<logger level="INFO" doc:name="insetion status" doc:id="0a18ec25-b94c-45a4-96c7-7d1a64e11b95" message='#["inserted into database"]' />
+				<ee:transform doc:name="response-from-numverify" doc:id="c4b9f250-004f-47c2-9385-d9320fe01f05">
+			<ee:message>
+						<ee:set-payload resource="response-from-request-in-json.dwl" />
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="valid- response- data" doc:id="c7bdde81-012d-450d-8390-99374d663b24" message="#[payload]"/>
+			</when>
+			<otherwise >
+				<set-payload value='phone number is not valid' doc:name="default-response" doc:id="389b3015-a05f-41e3-a67c-450e0c65fc24" />
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="notification" doc:id="ef90ad22-b073-4468-a09a-9f1a223881a4" name="notificationSub_Flow"/>
+	</flow>
+	<flow name="customers-data-retrieve-from-new-dbFlow" doc:id="13c57732-c091-4034-b46c-4a66a88efa17" >
+		<db:select doc:name="data-retrieve" doc:id="44549782-0acd-4a52-94ac-16e2db7a2993" config-ref="${secure::db.config}">
+			<db:sql ><![CDATA[select * from modern_craft_customers]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="payload-in-json" doc:id="4b4c5a7a-acd7-46c5-880d-8a7a841dc55b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="retrived-data" doc:id="7f77615c-25f3-4899-93dc-569a1a7b4d83" />
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4d086c0b-773e-4243-b8da-c26e0f26fe73" type="DB:CONNECTIVITY">
+				<ee:transform doc:name="Transform Message" doc:id="9ae5b822-28a8-4c79-897e-cb2846f004e5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorMessage: "DB CONNECTIVITY" as String default ""
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="customer-data-retrieve-from-new-db-by-specific-idFlow" doc:id="88ebe6e6-fcc1-432f-a5ec-97878ac5c245" >
+		<db:select doc:name="single-data-retrieve" doc:id="537e8cbc-2ea5-4b55-a6ba-8f50593c9070" config-ref="${secure::db.config}">
+			<db:sql ><![CDATA[select * from modern_craft_customers where id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.uriParams['customer-id']
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="payload-in-json" doc:id="d27b541a-42ab-438f-ac9c-90886e858004" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="retrieved-data" doc:id="701b9ea5-2417-4ad9-b494-087568c241a9" />
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9812b4cd-b94c-4af5-8207-0b20227d302f" type="DB:CONNECTIVITY">
+				<ee:transform doc:name="Transform Message" doc:id="19fba140-2a65-4fdd-8520-43673c532243" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: "DB CONNECTIVITY" as String default ""
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="notificationSub_Flow" doc:id="b0ff37d2-a576-45e7-8cf5-77311a6bf527">
+		<async doc:name="Async" doc:id="1be55b03-7eed-40e7-8c6c-8031f54bc095">
+			<scatter-gather doc:name="Scatter-Gather" doc:id="f4c64672-b669-4a83-90da-3ef232c686cc">
+			<route>
+				<ee:transform doc:name="Transform Message" doc:id="dc64fd6d-d6aa-422b-b467-10f7de8bbbbb">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	From: p("secure::twilio.FromPhoneNumber"),
+	To: p("secure::twilio.ToPhoneNumber"),
+	Body: "The validation of phone number: " ++ payload.number ++ " is done. The result turned: "++ payload.valid as Boolean
+} ]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+				<twilio:create20100401-accounts-messagesjson-by-account-sid doc:name="SMS-notification" doc:id="6dfbd703-ff7e-49ae-ba95-e63284de932c" config-ref="Twilio_Connector_Config" accountSid="${secure::twilio.userName}">
+			</twilio:create20100401-accounts-messagesjson-by-account-sid>
+			</route>
+			<route>
+				<email:send doc:name="email-notification" doc:id="2caeccc8-e5ee-4cb5-971a-ff4cd466b540" config-ref="Email_SMTP" fromAddress="${secure::emailSMTP.userName}" subject="phone validation">
+						<email:to-addresses>
+					<email:to-address value="${secure::emailSMTP.userName}" />
+				</email:to-addresses>
+				<email:body contentType="text/html" encoding="UTF-8">
+							<email:content><![CDATA[#["validation is done. The result is " ++ payload.valid as String]]]></email:content>
+						</email:body>
+					</email:send>
+			</route>
+			</scatter-gather>
+		</async>
+	</sub-flow>
+	
+</mule>

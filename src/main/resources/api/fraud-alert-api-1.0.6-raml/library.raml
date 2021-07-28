@@ -1,0 +1,11 @@
+#%RAML 1.0 Library
+usage:
+types:
+  Customers: !include dataTypes/customers-dataType.raml
+  Customer: !include dataTypes/customer-dataType.raml
+  Validate: !include dataTypes/response-dataType.raml
+resourceTypes:
+  collection: !include resourceTypes/collection.raml
+  member: !include resourceTypes/member.raml
+traits:
+  client-id-required: !include traits/client-id-required.raml
